@@ -1,0 +1,11 @@
+# Źródła zasobów
+
+Zasoby pochodzą z Poly Haven lub ambientCG (CC0); kopie pobrano z publicznych repozytoriów GitHub. To wybrane zasoby testowe, nie gwarancja docelowej jakości całej sceny.
+
+- `asphalt.jpg`: [Asphalt 02, Poly Haven](https://polyhaven.com/a/asphalt_02), 1K diffuse, kopia [aadiyen/A-Loan](https://github.com/aadiyen/A-Loan/blob/HEAD/assets/textures/asphalt_02_diff_1k.jpg).
+- `grass.jpg`: [Grass 004, ambientCG](https://ambientcg.com/view?id=Grass004), 1K color, kopia [aadiyen/A-Loan](https://github.com/aadiyen/A-Loan/blob/HEAD/assets/textures/Grass004_1K-JPG_Color.jpg).
+- `jacaranda.glb`: [Jacaranda Tree, Poly Haven](https://polyhaven.com/a/jacaranda_tree), zoptymalizowana kopia [smansfield635-create](https://github.com/smansfield635-create/smansfield635-create.github.io/blob/main/showroom/globe/h-earth/assets/jacaranda/Gratitude-Jacaranda-Candidate.glb); ok. 455 tys. trójkątów. [Opis przygotowania modelu](https://github.com/smansfield635-create/smansfield635-create.github.io/issues/6675).
+- `boulder_01.glb` i `fern.glb`: modele Poly Haven z [LeafDraw](https://github.com/francisreboucas/leafdraw/tree/main/leafdraw/resources/models/polyhaven); [Boulder 01](https://polyhaven.com/a/boulder_01), [Fern 02](https://polyhaven.com/a/fern_02). Kopie były dostosowane przez autorów LeafDraw.
+- `sky.hdr`: [Kloofendal 48d Partly Cloudy (Pure Sky), Poly Haven](https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky), kopia [dm-portal-assets](https://github.com/jasmine314-dev/dm-portal-assets), zmniejszona do 256 × 128; oświetlenie robocze, nie pełnej jakości niebo.
+- `facade/`: [Modular Urban Apartments Facade, Poly Haven](https://polyhaven.com/a/modular_urban_apartments_facade), oryginalny moduł glTF z teksturami 1K, pobrany z [dopesick-game](https://github.com/andersanders806-dev/dopesick-game/tree/main/assets/polyhaven/modular_urban_apartments_facade). W grze użyto małego zestawienia modułów; cała mapa nie została zastąpiona modelem.
+- `asphalt-normal.jpg` i `asphalt-arm.jpg`: normal OpenGL i mapa AO/roughness/metallic z [Asphalt 02](https://polyhaven.com/a/asphalt_02), kopia z [catch_dog](https://github.com/khanhpn/catch_dog/tree/HEAD/assets/visual/environment). Normal i roughness używane na drogach.
