@@ -1,9 +1,16 @@
 # Port Azul — prototyp mapy 3D
 
-Wczesny szkic terenu o wymiarach 5 × 5 km: miasto, dzielnice, dwa parki, las i dwa odcinki plaży. Na razie mapa **nie jest fotorealistyczną ani ukończoną grą**: budynki, większość drzew i teren są uproszczone; nie ma ruchu ulicznego, kolizji ani kompletnych wnętrz. Kamera może przelatywać przez obiekty. Wygląd, oświetlenie i zawartość są w trakcie budowy.
+Wczesny prototyp otwartego terenu o wymiarach 5 × 5 km. Są tu dzielnice z zabudową o różnej wysokości, sieć ulic, dwa parki, pagórkowaty las i dwa odcinki plaży. Czas akcji: około 2010–2015 r.
 
-Do projektu dodano wybrane zdjęciowe tekstury asfaltu i trawy oraz modele drzewa, skały i paproci. Źródła i informacje o licencjach znajdują się w [public/assets/SOURCES.md](public/assets/SOURCES.md). Ze względu na rozmiar modelu drzewa pierwsze wczytanie może trochę potrwać. Model nieba ma niską rozdzielczość i jest tymczasowy.
+**Stan projektu:** to nadal szkic, nie mapa o jakości GTA: San Andreas. Większość budynków jest generowana proceduralnie, ulice mają powtarzalny układ, nie ma ruchu ulicznego, postaci ani kolizji. Wnętrza nie są ukończone, a kamera może przechodzić przez obiekty. Wydajność i wygląd wymagają dalszej pracy.
+
+Zastosowano wybrane materiały i modele ze źródeł CC0, m.in. tekstury PBR, moduły fasad i wyposażenie ulicy. Wybrane obiekty mogą ładować się po pojawieniu się mapy. Źródła i informacje o licencjach: [public/assets/SOURCES.md](public/assets/SOURCES.md).
 
 ## Uruchomienie
 
-`npm install` i `npm run dev`. Kliknij „Zwiedzaj mapę”, aby przejść do poziomu ulicy. WASD/strzałki: ruch, Q/E: wysokość, Shift: szybciej, przeciąganie myszą: obracanie kamery. Lista miejsc przenosi kamerę do wybranej części mapy.
+```sh
+npm install
+npm run dev
+```
+
+Kliknij **Zwiedzaj mapę**, aby przejść na poziom ulicy. WASD/strzałki: ruch kamery, Q/E: wysokość, Shift: szybszy ruch, przeciąganie myszą: obracanie kamery. **Mapa miasta** otwiera wybór lokalizacji; **Widok ogólny** wraca do widoku początkowego.
