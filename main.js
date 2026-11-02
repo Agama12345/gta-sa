@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 const canvas=document.querySelector('#world');const renderer=new THREE.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(0xa8c8c0);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0xb9cec1,0.00032);const camera=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,1,11000);scene.add(new THREE.HemisphereLight(0xd9eff0,0x63785a,2));const sun=new THREE.DirectionalLight(0xffe4b9,2.2);sun.position.set(-1000,1600,700);scene.add(sun);
 new RGBELoader().load('/assets/sky.hdr', sky=>{sky.mapping=THREE.EquirectangularReflectionMapping;scene.environment=sky;scene.background=sky}, undefined, ()=>console.warn('Nie udało się wczytać nieba'));
 const loader=new THREE.TextureLoader();function groundTexture(path,rx,ry){const t=loader.load(path);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx,ry);t.anisotropy=renderer.capabilities.getMaxAnisotropy();return t}
@@ -26,20 +27,29 @@ const glass=windowGlass;for(let level=1;level<Math.floor(h/4);level++){let wy=le
 // Sidewalks and lane markings throughout the street grid.
 const sidewalkMaterial=new THREE.MeshStandardMaterial({map:pavementTex,normalMap:pavementNormal,roughnessMap:pavementRough,roughness:1});
 const pale=mat('#d5d0bf');
-for(let x=-1800;x<=1800;x+=240){for(const dx of [-21,21])box(x+dx,2,0,7,4,4400,sidewalkMaterial);for(let z=-2140;z<2100;z+=18)instance('paint',pale,x,2.2,z,.3,.15,7)}
+for(let x=-1800;x<=1800;x+=240){for(const dx of [-21,21])box(x+dx,1.1,0,7,2.2,4400,sidewalkMaterial);for(let z=-2140;z<2100;z+=18)instance('paint',pale,x,2.2,z,.3,.15,7)}
 const pavementEW=groundTexture('/assets/pavement.jpg',950,2),normalEW=groundTexture('/assets/pavement-normal.jpg',950,2),roughEW=groundTexture('/assets/pavement-rough.jpg',950,2);normalEW.colorSpace=THREE.NoColorSpace;roughEW.colorSpace=THREE.NoColorSpace;
 const sidewalkEW=new THREE.MeshStandardMaterial({map:pavementEW,normalMap:normalEW,roughnessMap:roughEW});
-for(let z=-2040;z<=1800;z+=240){for(const dz of [-21,21])box(0,2,z+dz,3800,4,7,sidewalkEW);for(let x=-1850;x<1850;x+=18)instance('paint',pale,x,2.3,z,7,.15,.3)}
+for(let z=-2040;z<=1800;z+=240){for(const dz of [-21,21])box(0,1.1,z+dz,3800,2.2,7,sidewalkEW);for(let x=-1850;x<1850;x+=18)instance('paint',pale,x,2.3,z,7,.15,.3)}
 // Parks, trees and the forest.
-box(0,2,0,750,3,750,parkMat);box(960,2,960,500,3,500,parkMat);const trunk=mat('#806b50'),leaves=[mat('#638965'),mat('#789e70'),mat('#9aad76')];function tree(x,z,s){instance('trunk',trunk,x,s*.35,z,7*s/30,25*s/30,7*s/30);let k=Math.floor(random()*3);instance('leaf'+k,leaves[k],x,s,z,s,s*1.2,s)}flush();
+box(0,1.1,0,750,2.2,750,parkMat);box(960,1.1,960,500,2.2,500,parkMat);box(0,2.25,0,12,.1,730,sidewalkMaterial);box(0,2.25,0,730,.1,12,sidewalkEW);box(960,2.25,960,10,.1,480,sidewalkMaterial);box(960,2.25,960,480,.1,10,sidewalkEW);const trunk=mat('#806b50'),leaves=[mat('#638965'),mat('#789e70'),mat('#9aad76')];function tree(x,z,s){instance('trunk',trunk,x,s*.35,z,7*s/30,25*s/30,7*s/30);let k=Math.floor(random()*3);instance('leaf'+k,leaves[k],x,s,z,s,s*1.2,s)}flush();
 // Public-domain Poly Haven assets, redistributed through public GitHub mirrors.
-const gltfLoader=new GLTFLoader();
+const gltfLoader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 function placeAsset(url, locations, height){gltfLoader.load(url,gltf=>{const original=gltf.scene;original.updateMatrixWorld(true);const bounds=new THREE.Box3().setFromObject(original);const size=bounds.getSize(new THREE.Vector3());if(!Number.isFinite(size.y)||size.y<=0)return;const center=bounds.getCenter(new THREE.Vector3());locations.forEach(([x,z,rotation,scale=1])=>{let group=new THREE.Group(),model=original.clone(true),factor=height/size.y*scale;model.position.set(-center.x*factor,-bounds.min.y*factor,-center.z*factor);model.scale.setScalar(factor);group.position.set(x,3,z);group.rotation.y=rotation;group.add(model);scene.add(group)})},undefined,e=>console.warn('Błąd wczytania modelu',url,e))}
 const pineLocations=[];for(let i=0;i<55;i++)pineLocations.push([-2200+random()*1100,-2200+random()*1100,random()*Math.PI*2,.7+random()*.6]);
 placeAsset('/assets/pine.glb',pineLocations,35);
+const parkTrees=[];for(let i=0;i<65;i++){let x=(random()-.5)*690,z=(random()-.5)*690;if(Math.abs(x)<25||Math.abs(z)<25)continue;parkTrees.push([x,z,random()*6,.65+random()*.45])}for(let i=0;i<30;i++){let x=730+random()*460,z=730+random()*460;if(Math.abs(x-960)<20||Math.abs(z-960)<20)continue;parkTrees.push([x,z,random()*6,.65+random()*.45])}placeAsset('/assets/props/oak.glb',parkTrees,20);
 placeAsset('/assets/jacaranda.glb',[[-290,180,0,1],[260,205,1,.9],[-250,-230,2,.8],[240,-200,3,.85],[840,930,1,.8],[1050,1010,2,1]],38);
 placeAsset('/assets/boulder_01.glb',[[1900,500,0,1],[1900,600,2,.7],[1850,-400,1,.8],[800,1950,2,.8],[-1100,1900,3,1]],18);
 placeAsset('/assets/fern.glb',[[-200,140,0,1],[240,190,1,1],[-260,-200,2,1],[900,960,3,1]],3);
+// Repeat realistic CC0 street furniture in the city and parks.
+const lamps=[];for(let x=-1680;x<=1680;x+=480)for(let z=-1920;z<1800;z+=240)lamps.push([x-93,z-99,0,1]);
+placeAsset('/assets/props/street-lamp.glb',lamps,7);
+const benches=[[-140,-80,0,1],[140,80,Math.PI,1],[-100,180,Math.PI/2,1],[820,900,0,1],[1080,1010,1.5,1]];
+placeAsset('/assets/props/park-bench.glb',benches,1.1);
+placeAsset('/assets/props/trash-can.glb',[[-130,-80,0,1],[150,80,0,1],[815,900,0,1],[1075,1010,0,1],[108,488,0,1]],1.1);
+placeAsset('/assets/props/hydrant.glb',[[115,488,0,1],[-320,480,0,1],[580,720,0,1],[1770,-200,0,1]],.9);
+placeAsset('/assets/props/utility-box.glb',[[130,490,0,1],[370,240,1,1],[-370,720,0,1]],1.5);
 // A small, assembled facade sample: actual modular geometry, not the whole city.
 gltfLoader.load('/assets/facade/modular_urban_apartments_facade.gltf', gltf=>{
  const wall=gltf.scene.getObjectByName('wall_window_centered_large_02');
@@ -50,12 +60,34 @@ gltfLoader.load('/assets/facade/modular_urban_apartments_facade.gltf', gltf=>{
    const part=source.clone(true);part.position.set(98+column*3, floor*3+2, 527.8);scene.add(part)
  }
 },undefined,e=>console.warn('Nie udało się wczytać fasady',e));
+// Nearby street-level facades use authentic modular meshes. Instances are bounded to a
+// small radius so detail does not multiply into tens of millions of triangles at once.
+let facadeDetail=null,detailTime=0;
+gltfLoader.load('/assets/facade/modular_urban_apartments_facade.gltf',gltf=>{
+ const sources=['wall_window_centered_large_02','window_centered_large_02'].map(n=>gltf.scene.getObjectByName(n));
+ if(sources.some(s=>!s))return;
+ const meshes=[];
+ for(const source of sources){source.updateWorldMatrix(true,true);let inv=new THREE.Matrix4().copy(source.matrixWorld).invert();source.traverse(child=>{if(!child.isMesh)return;let relative=inv.clone().multiply(child.matrixWorld);let material=child.material.clone();material.side=THREE.DoubleSide;let m=new THREE.InstancedMesh(child.geometry,material,1800);m.count=0;m.frustumCulled=false;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);scene.add(m);meshes.push({mesh:m,relative})})}
+ facadeDetail={meshes,dummy:new THREE.Object3D(),matrix:new THREE.Matrix4()};
+});
+function refreshFacadeDetails(){if(!facadeDetail)return;let {meshes,dummy,matrix}=facadeDetail;let count=0;
+ for(const b of buildings){if(Math.hypot(b.x-camera.position.x,b.z-camera.position.z)>220)continue;
+  for(const side of [0,1,2,3]){let width=side<2?b.w:b.d, cols=Math.floor((width-4)/6);for(let f=0;f<4&&f*3<b.h-3;f++)for(let col=0;col<cols;col++){
+   if(count>=1800)break;let offset=-width/2+2+col*6+6;
+   // The facade module spans local x=-3..0; its x scale of two spans six metres.
+   let x=b.x+(side<2?offset:side===2?-b.w/2-.3:b.w/2+.3);
+   let z=b.z+(side<2?(side===0?b.d/2+.3:-b.d/2-.3):offset);
+   dummy.position.set(x,2.25+f*3,z);dummy.rotation.set(0,side<2?0:Math.PI/2,0);dummy.scale.set(2,1,1);dummy.updateMatrix();
+   for(const item of meshes){matrix.multiplyMatrices(dummy.matrix,item.relative);item.mesh.setMatrixAt(count,matrix)}count++;
+  }}
+ }for(const item of meshes){item.mesh.count=count;item.mesh.instanceMatrix.needsUpdate=true}
+}
 const asphaltNormal=groundTexture('/assets/asphalt-normal.jpg',11,1300);asphaltNormal.colorSpace=THREE.NoColorSpace;
 const asphaltArm=groundTexture('/assets/asphalt-arm.jpg',11,1300);asphaltArm.colorSpace=THREE.NoColorSpace;
 const asphaltNormalEW=groundTexture('/assets/asphalt-normal.jpg',1100,11);asphaltNormalEW.colorSpace=THREE.NoColorSpace;
 const asphaltArmEW=groundTexture('/assets/asphalt-arm.jpg',1100,11);asphaltArmEW.colorSpace=THREE.NoColorSpace;
 scene.traverse(o=>{if(!o.isMesh||!o.material)return;let m=o.material;if(m.map===roadNS){m.normalMap=asphaltNormal;m.roughnessMap=asphaltArm;m.needsUpdate=true}if(m.map===roadEW){m.normalMap=asphaltNormalEW;m.roughnessMap=asphaltArmEW;m.needsUpdate=true}});
-const places={city:{pos:[650,380,850],look:[0,100,0],name:'CENTRUM MIASTA',desc:'MIEJSCE, W KTÓRYM WSZYSTKO SIĘ ZACZYNA'},blocks:{pos:[-1000,260,1000],look:[-500,80,500],name:'BLOKOWISKA',desc:'DZIELNICA, KTÓRA NIGDY NIE ZASYPIA'},park:{pos:[650,370,850],look:[0,0,0],name:'ZIELONY PARK',desc:'CHWILA ODDECHU W SERCU MIASTA'},forest:{pos:[-1350,370,-1000],look:[-1900,0,-1700],name:'LAS PÓŁNOCNY',desc:'DALEKO OD MIEJSKIEGO ZGIEŁKU'},beach:{pos:[1450,300,800],look:[2150,0,250],name:'WYBRZEŻE',desc:'DWIE PLAŻE, JEDNO NIEKOŃCZĄCE SIĘ LATO'}};let yaw=0,pitch=0,active='city';function setPlace(id){active=id;let p=places[id];camera.position.set(...p.pos);let target=new THREE.Vector3(...p.look).sub(camera.position).normalize();yaw=Math.atan2(-target.x,-target.z);pitch=Math.asin(target.y);document.querySelector('#place-name').textContent=p.name;document.querySelector('#place-description').textContent=p.desc;document.querySelectorAll('[data-place]').forEach(b=>b.classList.toggle('active',b.dataset.place===id))}setPlace('city');document.querySelectorAll('[data-place]').forEach(b=>b.onclick=()=>setPlace(b.dataset.place));document.querySelector('#reset').onclick=()=>setPlace('city');document.querySelector('#explore').onclick=()=>{camera.position.set(110,3,492);yaw=Math.PI;pitch=0;document.querySelector('#hint').classList.add('show');setTimeout(()=>document.querySelector('#hint').classList.remove('show'),5000)};
+const places={city:{pos:[650,180,850],look:[100,80,0],name:'CENTRUM MIASTA',desc:'MIEJSCE, W KTÓRYM WSZYSTKO SIĘ ZACZYNA'},blocks:{pos:[-1000,260,1000],look:[-500,80,500],name:'BLOKOWISKA',desc:'DZIELNICA, KTÓRA NIGDY NIE ZASYPIA'},park:{pos:[650,370,850],look:[0,0,0],name:'ZIELONY PARK',desc:'CHWILA ODDECHU W SERCU MIASTA'},forest:{pos:[-1350,370,-1000],look:[-1900,0,-1700],name:'LAS PÓŁNOCNY',desc:'DALEKO OD MIEJSKIEGO ZGIEŁKU'},beach:{pos:[1450,300,800],look:[2150,0,250],name:'WYBRZEŻE',desc:'DWIE PLAŻE, JEDNO NIEKOŃCZĄCE SIĘ LATO'}};let yaw=0,pitch=0,active='city';function setPlace(id){active=id;let p=places[id];camera.position.set(...p.pos);let target=new THREE.Vector3(...p.look).sub(camera.position).normalize();yaw=Math.atan2(-target.x,-target.z);pitch=Math.asin(target.y);document.querySelector('#place-name').textContent=p.name;document.querySelector('#place-description').textContent=p.desc;document.querySelectorAll('[data-place]').forEach(b=>b.classList.toggle('active',b.dataset.place===id))}setPlace('city');document.querySelectorAll('[data-place]').forEach(b=>b.onclick=()=>setPlace(b.dataset.place));document.querySelector('#reset').onclick=()=>{document.querySelector('#app').classList.remove('exploring');setPlace('city')};document.querySelector('#explore').onclick=()=>{camera.position.set(110,4.2,492);yaw=Math.PI;pitch=0;document.querySelector('#app').classList.add('exploring');document.querySelector('#hint').classList.add('show');setTimeout(()=>document.querySelector('#hint').classList.remove('show'),5000)};
 let keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);addEventListener('blur',()=>keys={});let dragging=false,lastX=0,lastY=0;canvas.addEventListener('pointerdown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener('pointermove',e=>{if(!dragging)return;yaw-=(e.clientX-lastX)*.004;pitch=Math.max(-1.4,Math.min(1.4,pitch-(e.clientY-lastY)*.004));lastX=e.clientX;lastY=e.clientY});
 const map=document.querySelector('#map'),mc=map.getContext('2d');function drawMap(){mc.fillStyle='#86a385';mc.fillRect(0,0,360,280);mc.fillStyle='#6b9e9c';mc.fillRect(324,0,36,280);mc.fillRect(0,266,360,14);mc.fillStyle='#d2bc94';mc.fillRect(315,0,9,280);mc.fillRect(0,255,315,11);mc.fillStyle='#6c876d';mc.fillRect(20,15,83,65);mc.fillStyle='#bdc3a5';for(let x=55;x<315;x+=15)for(let y=25;y<248;y+=14)mc.fillRect(x,y,10,9);mc.fillStyle='#759c70';mc.fillRect(150,117,48,42);mc.fillRect(223,173,33,30);mc.fillStyle='#e1eeac';let px=(camera.position.x+2500)/5000*360,py=(camera.position.z+2500)/5000*280;mc.beginPath();mc.arc(px,py,5,0,Math.PI*2);mc.fill();mc.strokeStyle='#fff';mc.lineWidth=2;mc.stroke()}
-let clock=new THREE.Clock();function tick(){let dt=Math.min(clock.getDelta(),.05),speed=(keys.shift?140:32)*dt;let f=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),r=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));if(keys.w||keys.arrowup)camera.position.addScaledVector(f,speed);if(keys.s||keys.arrowdown)camera.position.addScaledVector(f,-speed);if(keys.d||keys.arrowright)camera.position.addScaledVector(r,speed);if(keys.a||keys.arrowleft)camera.position.addScaledVector(r,-speed);if(keys.e)camera.position.y+=speed;if(keys.q)camera.position.y-=speed;camera.position.y=Math.max(3,Math.min(1500,camera.position.y));camera.position.x=THREE.MathUtils.clamp(camera.position.x,-2500,2500);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-2500,2500);camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;drawMap();renderer.render(scene,camera);requestAnimationFrame(tick)}tick();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+let clock=new THREE.Clock();function tick(){let dt=Math.min(clock.getDelta(),.05);detailTime+=dt;if(detailTime>.5){refreshFacadeDetails();detailTime=0}let speed=(keys.shift?140:32)*dt;let f=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),r=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));if(keys.w||keys.arrowup)camera.position.addScaledVector(f,speed);if(keys.s||keys.arrowdown)camera.position.addScaledVector(f,-speed);if(keys.d||keys.arrowright)camera.position.addScaledVector(r,speed);if(keys.a||keys.arrowleft)camera.position.addScaledVector(r,-speed);if(keys.e)camera.position.y+=speed;if(keys.q)camera.position.y-=speed;camera.position.y=Math.max(4.2,Math.min(1500,camera.position.y));camera.position.x=THREE.MathUtils.clamp(camera.position.x,-2500,2500);camera.position.z=THREE.MathUtils.clamp(camera.position.z,-2500,2500);camera.rotation.order='YXZ';camera.rotation.y=yaw;camera.rotation.x=pitch;drawMap();renderer.render(scene,camera);requestAnimationFrame(tick)}tick();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
